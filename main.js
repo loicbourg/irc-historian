@@ -14,21 +14,53 @@ var client = new irc.Client(config.server, config.nick, {
 	port: config.port
 });
 
+function User() {
+	this.join = this.part = moment(0);
+}
+
 function Message(nick, text) {
 	this.nick = nick;
 	this.text = text;
+	this.timestamp = moment();
 }
 
 function History() {
 	this.messages = new CBuffer(messageLimit);
+	this.users = {};
 }
 
-History.prototype.getMessages = function(nick, count) {
+History.prototype.query = function(nick, count) {
 	count = Math.min(count, this.messages.size);
-	for (var i = 0; i < count; ++i) {
+	for (var i = count - 1; i >= 0; --i) {
 		var message = this.messages.get(this.messages.size - i - 1);
 		client.say(nick, message.nick + ': ' + message.text);
 	}
+}
+
+History.prototype.update = function(nick) {
+	this.users[nick] = this.users[nick] || new User();
+	var user = this.users[nick];
+	if (user.part == user.join) {
+		client.say(nick, 'You are up to date.');
+		return;
+	}
+
+	for (var i = 0; i < this.messages.size; ++i) {
+		var message = this.messages.get(i);
+		if (message.timestamp.unix() > user.part.unix()) {
+			break;
+		}
+	}
+
+	for (; i < this.messages.size; ++i) {
+		var message = this.messages.get(i);
+		if (message.timestamp.unix() > user.join.unix()) {
+			break;
+		}
+		client.say(nick, message.nick + ': ' + message.text);
+	}
+
+	user.join = user.part = moment();
 }
 
 function getHistory(channel) {
@@ -53,6 +85,18 @@ for (var i = 0; i < config.channels.length; ++i) {
 		var message = new Message(nick, text);
 		messages.push(message);
 	});
+
+	// Record joins/parts per users per channel
+	var users = histories[i].users;
+	client.addListener('join' + config.channels[i], function(nick, message) {
+		users[nick] = users[nick] || new User();
+		users[nick].join = moment();
+	});
+
+	client.addListener('part' + config.channels[i], function(nick, message, reason) {
+		users[nick] = users[nick] || new User();
+		users[nick].part = moment();
+	});
 }
 
 // Service history requests
@@ -64,7 +108,15 @@ client.addListener('message', function(nick, to, text) {
 			var count = parseInt(args[2]);
 			var history = getHistory(args[1]);
 			if (history) {
-				history.getMessages(nick, count);
+				history.query(nick, count);
+			}
+		}
+
+		// Update missed messages for this channel
+		if (args.length == 2 && args[0] == 'update') {
+			var history = getHistory(args[1]);
+			if (history) {
+				history.update(nick);
 			}
 		}
 	}
