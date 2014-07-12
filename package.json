@@ -1,0 +1,17 @@
+{
+  "name": "irc-historian",
+  "version": "0.0.0",
+  "description": "An IRC history bot.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "kkoenig",
+  "license": "MIT",
+  "dependencies": {
+    "CBuffer": "^0.1.4",
+    "irc": "^0.3.7",
+    "minimist": "^0.2.0",
+    "moment": "^2.7.0"
+  }
+}
