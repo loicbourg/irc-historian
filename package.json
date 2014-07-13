@@ -1,6 +1,6 @@
 {
   "name": "irc-historian",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "An IRC history bot.",
   "repository": {
     "type": "git",
@@ -21,7 +21,6 @@
   "dependencies": {
     "CBuffer": "^0.1.4",
     "irc": "^0.3.7",
-    "minimist": "^0.2.0",
     "moment": "^2.7.0",
     "yargs": "^1.2.6"
   }
