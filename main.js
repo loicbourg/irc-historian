@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var irc = require('irc');
 var moment = require('moment');
 var CBuffer = require('CBuffer');
