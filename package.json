@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "description": "An IRC history bot.",
   "repository": {
+    "type": "git",
     "url": "https://github.com/kkoenig/irc-historian.git"
   },
-  "main": "main.js",
+  "main": "historian.js",
   "keywords": [
     "irc",
     "history",
@@ -15,12 +16,13 @@
   "author": "kkoenig",
   "license": "MIT",
   "bin": {
-    "historian": "main.js"
+    "historian": "historian.js"
   },
   "dependencies": {
     "CBuffer": "^0.1.4",
     "irc": "^0.3.7",
     "minimist": "^0.2.0",
-    "moment": "^2.7.0"
+    "moment": "^2.7.0",
+    "yargs": "^1.2.6"
   }
 }

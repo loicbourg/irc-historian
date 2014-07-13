@@ -3,17 +3,36 @@
 var irc = require('irc');
 var moment = require('moment');
 var CBuffer = require('CBuffer');
-var fs = require('fs');
 
-var argv = require('minimist')(process.argv.slice(2));
-var file = argv['config'];
-var config = JSON.parse(fs.readFileSync(file));
+var argv = require('yargs')
+	.demand(['s', 'c'])
+	.options('s', {
+		alias: 'server',
+		describe: 'Server url ex. "irc.yourserver.com".'
+	})
+	.options('c', {
+		alias: 'channels',
+		describe: 'Comma delineated list of channels to monitor.'
+	})
+	.options('n', {
+		alias: 'nick',
+		describe: 'Desired IRC nickname.',
+		default: 'historian'
+	})
+	.options('p', {
+		alias: 'port',
+		describe: 'The server port.',
+		default: '6667'
+	})
+	.argv;
+
+var channels = argv.channels.split(',');
 
 var messageLimit = 10000;
 
-var client = new irc.Client(config.server, config.nick, {
-	channels: config.channels,
-	port: config.port
+var client = new irc.Client(argv.server, argv.nick, {
+	channels: channels,
+	port: argv.port
 });
 
 function User() {
@@ -66,8 +85,8 @@ History.prototype.update = function(nick) {
 }
 
 function getHistory(channel) {
-	for (var i = 0; i < config.channels.length; ++i) {
-		if (config.channels[i] === channel)
+	for (var i = 0; i < channels.length; ++i) {
+		if (channels[i] === channel)
 
 		{
 			return histories[i];
@@ -78,24 +97,24 @@ function getHistory(channel) {
 }
 
 var histories = [];
-for (var i = 0; i < config.channels.length; ++i) {
+for (var i = 0; i < channels.length; ++i) {
 	histories.push(new History());
 
 	// Stores messages for each channel
 	var messages = histories[i].messages;
-	client.addListener('message' + config.channels[i], function(nick, text) {
+	client.addListener('message' + channels[i], function(nick, text) {
 		var message = new Message(nick, text);
 		messages.push(message);
 	});
 
 	// Record joins/parts per users per channel
 	var users = histories[i].users;
-	client.addListener('join' + config.channels[i], function(nick, message) {
+	client.addListener('join' + channels[i], function(nick, message) {
 		users[nick] = users[nick] || new User();
 		users[nick].join = moment();
 	});
 
-	client.addListener('part' + config.channels[i], function(nick, message, reason) {
+	client.addListener('part' + channels[i], function(nick, message, reason) {
 		users[nick] = users[nick] || new User();
 		users[nick].part = moment();
 	});
@@ -103,7 +122,7 @@ for (var i = 0; i < config.channels.length; ++i) {
 
 // Service history requests
 client.addListener('message', function(nick, to, text) {
-	if (to === config.nick) {
+	if (to === argv.nick) {
 		var args = text.split(' ');
 		// Retrieve the last N messages for this channel
 		if (args.length == 3 && args[0] == 'get') {
