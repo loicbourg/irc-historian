@@ -1,6 +1,6 @@
 {
   "name": "irc-historian",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "An IRC history bot.",
   "repository": {
     "type": "git",
