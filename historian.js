@@ -96,28 +96,32 @@ function getHistory(channel) {
 	return null;
 }
 
-var histories = [];
-for (var i = 0; i < channels.length; ++i) {
+function logChannel(channel, position) {
 	histories.push(new History());
 
 	// Stores messages for each channel
-	var messages = histories[i].messages;
-	client.addListener('message' + channels[i], function(nick, text) {
+	var messages = histories[position].messages;
+	client.addListener('message' + channel, function(nick, text) {
 		var message = new Message(nick, text);
 		messages.push(message);
 	});
 
 	// Record joins/parts per users per channel
-	var users = histories[i].users;
-	client.addListener('join' + channels[i], function(nick, message) {
+	var users = histories[position].users;
+	client.addListener('join' + channel, function(nick, message) {
 		users[nick] = users[nick] || new User();
 		users[nick].join = moment();
 	});
 
-	client.addListener('part' + channels[i], function(nick, message, reason) {
+	client.addListener('part' + channel, function(nick, message, reason) {
 		users[nick] = users[nick] || new User();
 		users[nick].part = moment();
 	});
+}
+
+var histories = [];
+for (var i = 0; i < channels.length; ++i) {
+	logChannel(channels[i], i);
 }
 
 // Service history requests
@@ -139,6 +143,11 @@ client.addListener('message', function(nick, to, text) {
 			if (history) {
 				history.update(nick);
 			}
+		}
+		
+		if (args.length == 2 && args[0] == 'join') {
+			client.join(args[1]);
+			logChannel(args[1], histories.length);
 		}
 	}
 });
