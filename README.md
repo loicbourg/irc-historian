@@ -1,9 +1,6 @@
 irc-historian
 =============
-
 A simple IRC bot that records chat history and plays it back to users.
-
-
 installation
 ============
 
@@ -15,10 +12,8 @@ or clone this project on github:
 
     git clone http://github.com/kkoenig/irc-historian.git
     
-
 commands
 ========
-
 update
 ------
 Gets all the chat messages that occurred while the current user was not present in the given channel.
